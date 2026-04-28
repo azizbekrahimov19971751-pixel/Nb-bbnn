@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏹 KAMONCHI — O'yini</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: #04080a; font-family: Georgia, serif; overflow: hidden; color: gold; }
+        canvas { display: block; background: #000; border: 2px solid #3a3020; cursor: crosshair; max-width: 100vw; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); text-align: center; }
+        .btn { background: linear-gradient(135deg, #8b4500, #ffd700); border: 2px solid #ffd700; padding: 12px 40px; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 6px; margin-top: 20px; color: #000; }
+    </style>
+</head>
+<body>
+    <div style="position: relative;">
+        <canvas id="game" width="800" height="500"></canvas>
+        <div id="start-screen" class="overlay">
+            <h1>🏹 KAMONCHI</h1>
+            <p>Sichqonchani bosing va o'qni otish uchun qo'yib yuboring!</p>
+            <button class="btn" onclick="startGame()">BOSHLASH</button>
+        </div>
+        <div id="gameover-screen" class="overlay" style="display:none;">
+            <h1 style="color: #ff4444;">O'YIN TUGADI</h1>
+            <p>Ball: <span id="final-score">0</span></p>
+            <button class="btn" onclick="startGame()">QAYTA O'YNASH</button>
+        </div>
+    </div>
+<script>
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    let score = 0, lives = 5, gameActive = false, arrows = [], targets = [];
+
+    function startGame() {
+        score = 0; lives = 5; arrows = []; gameActive = true;
+        targets = [{ x: 700, y: 200, r: 40, vy: 3 }];
+        document.getElementById('start-screen').style.display = 'none';
+        document.getElementById('gameover-screen').style.display = 'none';
+        gameLoop();
+    }
+
+    function gameLoop() {
+        if(!gameActive) return;
+        ctx.fillStyle = "#0a0a1a";
+        ctx.fillRect(0, 0, 800, 500);
+        
+        targets.forEach(t => {
+            t.y += t.vy; if(t.y > 400 || t.y < 100) t.vy *= -1;
+            ctx.fillStyle = "red"; ctx.beginPath(); ctx.arc(t.x, t.y, t.r, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = "white"; ctx.beginPath(); ctx.arc(t.x, t.y, t.r*0.6, 0, Math.PI*2); ctx.fill();
+        });
+
+        arrows.forEach((a, i) => {
+            a.x += a.vx; a.y += a.vy; a.vy += 0.2;
+            ctx.strokeStyle = "gold"; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x-15, a.y-2); ctx.stroke();
+            targets.forEach(t => {
+                if(Math.hypot(a.x-t.x, a.y-t.y) < t.r) { score += 100; arrows.splice(i, 1); }
+            });
+        });
+
+        ctx.fillStyle = "gold"; ctx.font = "20px Georgia";
+        ctx.fillText("Ball: " + score, 20, 30);
+        ctx.fillText("Hayot: " + lives, 20, 60);
+        requestAnimationFrame(gameLoop);
+    }
+
+    canvas.addEventListener('mousedown', () => { if(gameActive) arrows.push({ x: 100, y: 400, vx: 15, vy: -10 }); });
+</script>
+</body>
+</html>
